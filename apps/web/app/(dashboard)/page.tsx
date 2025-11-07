@@ -13,10 +13,6 @@ export default function Page() {
       <p>apps/web</p>
       <UserButton />
       <OrganizationSwitcher hidePersonal/>
-      <div className="max-w-sm w-full mx-auto ">
-        <Button onClick={() => addUser()}>Add</Button>
-        {JSON.stringify(users, null, 2)}
-      </div>
     </div>
   )
 }

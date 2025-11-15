@@ -38,6 +38,9 @@ import {
   AISuggestions,
 } from '@workspace/ui/components/ai/suggestion'
 import { Form, FormField } from '@workspace/ui/components/form'
+import { useInfiniteScroll } from '@workspace/ui/hooks/use-infinite-scroll'
+import { InfiniteScrollTrigger } from "@workspace/ui/components/infinite-scroll-trigger";
+import { DicebearAvatar } from '@workspace/ui/components/dicebear-avatar'
 
 const formSchema = z.object({
   message: z.string().min(1, 'Message is required'),
@@ -79,6 +82,14 @@ export const WidgetChatScreen = () => {
     { initialNumItems: 10 }
   )
 
+
+  const {topElementRef, canLoadMore, isLoadingMore, handleLoadMore} = useInfiniteScroll({
+    status: messages.status,
+    loadMore: messages.loadMore,
+    loadSize: 10,
+  })
+
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -115,6 +126,12 @@ export const WidgetChatScreen = () => {
         </Button>
       </WidgetHeader>
       <AIConversation>
+        <InfiniteScrollTrigger
+          canLoadMore={canLoadMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={handleLoadMore}
+          ref={topElementRef}
+        />
         <AIConversationContent>
           {toUIMessages(messages.results ?? [])?.map((message) => {
             // Extract text content from message parts
@@ -131,7 +148,13 @@ export const WidgetChatScreen = () => {
                 <AIMessageContent>
                   <AIResponse>{textContent}</AIResponse>
                 </AIMessageContent>
-                {/* TODO: add avatar */}
+                {message.role === "assistant" && (
+                  <DicebearAvatar
+                    imageUrl='/logo.svg'
+                    seed='assistant'
+                    size={32}
+                  />
+                )}
               </AIMessage>
             )
           })}

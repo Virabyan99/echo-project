@@ -7,6 +7,7 @@ import { WidgetErrorScreen } from '../screens/widget-error-screen'
 import { WidgetLoadingScreen } from '../screens/widget-loading-screen'
 import { WidgetSelectionScreen } from '../screens/widget-selection-screen'
 import { WidgetChatScreen } from '../screens/widget-chat-screen'
+import { WidgetInboxScreen } from '../screens/widget-inbox-screen'
 
 interface Props {
   organizationId: string | null
@@ -21,7 +22,7 @@ export const WidgetView = ({ organizationId }: Props) => {
     error: <WidgetErrorScreen/>,
     auth: <WidgetAuthScreen/>,
     voice: <p>TODO</p>,
-    inbox: <p>TODO</p>,
+    inbox: <WidgetInboxScreen/>,
     selection: <WidgetSelectionScreen/>,
     chat: <WidgetChatScreen/>,
     contact: <p>TODO</p>
@@ -30,7 +31,7 @@ export const WidgetView = ({ organizationId }: Props) => {
 
   return (
     // TODO: confirm wether min-h-screen, min-w-screen is necessary
-    <main className=" min-h-screen min-w-screen flex h-full w-full flex-col overflow-hidden rounded-xl border bg-muted">
+    <main className=" min-h-screen  flex h-full w-full flex-col overflow-hidden rounded-xl border bg-muted">
       {screenComponents[screen]}
     </main>
   )

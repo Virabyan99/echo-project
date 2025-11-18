@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm convex dev:*)"
+      "Bash(pnpm convex dev:*)",
+      "Bash(pnpm turbo build:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm dev)",
+      "Bash(taskkill:*)",
+      "Bash(nul)",
+      "Bash(powershell -Command:*)",
+      "Bash(pnpm install)"
     ],
     "deny": [],
     "ask": []

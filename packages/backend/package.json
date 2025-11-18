@@ -14,10 +14,13 @@
     "typescript": "latest"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.65",
-    "@clerk/backend": "^2.6.1",
-    "@convex-dev/agent": "^0.3.0",
-    "ai": "^5.0.93",
+    "@ai-sdk/openai": "^2.0.0",
+    "@ai-sdk/provider": "^2.0.0",
+    "@clerk/backend": "^2.21.0",
+    "@convex-dev/agent": "0.3.0",
+    "@convex-dev/rag": "^0.6.0",
+    "@convex-dev/workpool": "^0.3.0",
+    "ai": "^5.0.29",
     "convex": "1.25.4",
     "convex-helpers": "^0.1.104",
     "zod": "3.25.76"

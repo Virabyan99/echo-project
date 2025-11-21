@@ -168,22 +168,33 @@ export const ConversationIdView = ({
             onLoadMore={handleLoadMore}
             ref={topElementRef}
           />
-          {toUIMessages(messages.results ?? [])?.map((message) => (
-            <AIMessage
-              // in reverse because we are watching from "Assistant perspective"
-              from={message.role === 'user' ? 'assistant' : 'user'}
-              key={message.id}>
-              <AIMessageContent>
-                <AIResponse>{getMessageText(message)}</AIResponse>
-              </AIMessageContent>
-              {message.role === 'user' && (
-                <DicebearAvatar
-                  seed={conversation?.contactSessionId ?? 'user'}
-                  size={32}
-                />
-              )}
-            </AIMessage>
-          ))}
+          {toUIMessages(messages.results ?? [])
+            ?.filter((message) => {
+              // Filter out tool-related messages (tool calls and tool results)
+              const hasToolCalls = message.parts?.some((part) => part.type === 'tool-call')
+              const hasToolResults = message.parts?.some((part) => part.type === 'tool-result')
+
+              // Only show messages with text content
+              const hasTextContent = message.parts?.some((part) => part.type === 'text' && part.text.trim().length > 0)
+
+              return hasTextContent && !hasToolCalls && !hasToolResults
+            })
+            .map((message) => (
+              <AIMessage
+                // in reverse because we are watching from "Assistant perspective"
+                from={message.role === 'user' ? 'assistant' : 'user'}
+                key={message.id}>
+                <AIMessageContent>
+                  <AIResponse>{getMessageText(message)}</AIResponse>
+                </AIMessageContent>
+                {message.role === 'user' && (
+                  <DicebearAvatar
+                    seed={conversation?.contactSessionId ?? 'user'}
+                    size={32}
+                  />
+                )}
+              </AIMessage>
+            ))}
         </AIConversationContent>
         <AIConversationScrollButton />
       </AIConversation>

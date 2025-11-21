@@ -133,31 +133,42 @@ export const WidgetChatScreen = () => {
           ref={topElementRef}
         />
         <AIConversationContent>
-          {toUIMessages(messages.results ?? [])?.map((message) => {
-            // Extract text content from message parts
-            const textContent =
-              message.parts
-                ?.filter((part) => part.type === 'text')
-                .map((part) => part.text)
-                .join('') || ''
+          {toUIMessages(messages.results ?? [])
+            ?.filter((message) => {
+              // Filter out tool-related messages (tool calls and tool results)
+              const hasToolCalls = message.parts?.some((part) => part.type === 'tool-call')
+              const hasToolResults = message.parts?.some((part) => part.type === 'tool-result')
 
-            return (
-              <AIMessage
-                from={message.role === 'user' ? 'user' : 'assistant'}
-                key={message.id}>
-                <AIMessageContent>
-                  <AIResponse>{textContent}</AIResponse>
-                </AIMessageContent>
-                {message.role === "assistant" && (
-                  <DicebearAvatar
-                    imageUrl='/logo.svg'
-                    seed='assistant'
-                    size={32}
-                  />
-                )}
-              </AIMessage>
-            )
-          })}
+              // Only show messages with text content
+              const hasTextContent = message.parts?.some((part) => part.type === 'text' && part.text.trim().length > 0)
+
+              return hasTextContent && !hasToolCalls && !hasToolResults
+            })
+            .map((message) => {
+              // Extract text content from message parts
+              const textContent =
+                message.parts
+                  ?.filter((part) => part.type === 'text')
+                  .map((part) => part.text)
+                  .join('') || ''
+
+              return (
+                <AIMessage
+                  from={message.role === 'user' ? 'user' : 'assistant'}
+                  key={message.id}>
+                  <AIMessageContent>
+                    <AIResponse>{textContent}</AIResponse>
+                  </AIMessageContent>
+                  {message.role === "assistant" && (
+                    <DicebearAvatar
+                      imageUrl='/logo.svg'
+                      seed='assistant'
+                      size={32}
+                    />
+                  )}
+                </AIMessage>
+              )
+            })}
         </AIConversationContent>
       </AIConversation>
       {/* TODO ADD Suggestions */}

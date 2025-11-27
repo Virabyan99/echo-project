@@ -7,19 +7,19 @@ import { useThreadMessages, toUIMessages } from '@convex-dev/agent/react'
 import { Button } from '@workspace/ui/components/button'
 import { WidgetHeader } from '../components/widget-header'
 import { ArrowLeft, MenuIcon } from 'lucide-react'
-import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+import { useAtomValue, useSetAtom } from 'jotai'
 import {
   contactSessionIdAtomFamily,
   conversationIdAtom,
   organizationIdAtom,
   screenAtom,
+  widgetSettingsAtom,
 } from '../../atoms/widget-atoms'
 import { useAction, useQuery } from 'convex/react'
 import { api } from '@workspace/backend/_generated/api'
 import {
   AIConversation,
   AIConversationContent,
-  AIConversationScrollButton,
 } from '@workspace/ui/components/ai/conversation'
 import {
   AIInput,
@@ -33,14 +33,15 @@ import {
   AIMessage,
 } from '@workspace/ui/components/ai/message'
 import { AIResponse } from '@workspace/ui/components/ai/response'
-import {
-  AISuggestion,
-  AISuggestions,
-} from '@workspace/ui/components/ai/suggestion'
 import { Form, FormField } from '@workspace/ui/components/form'
 import { useInfiniteScroll } from '@workspace/ui/hooks/use-infinite-scroll'
-import { InfiniteScrollTrigger } from "@workspace/ui/components/infinite-scroll-trigger";
+import { InfiniteScrollTrigger } from '@workspace/ui/components/infinite-scroll-trigger'
 import { DicebearAvatar } from '@workspace/ui/components/dicebear-avatar'
+import { useMemo } from 'react'
+import {
+  AISuggestions,
+  AISuggestion,
+} from '@workspace/ui/components/ai/suggestion'
 
 const formSchema = z.object({
   message: z.string().min(1, 'Message is required'),
@@ -50,6 +51,7 @@ export const WidgetChatScreen = () => {
   const setScreen = useSetAtom(screenAtom)
   const setConversationId = useSetAtom(conversationIdAtom)
 
+  const widgetSettings = useAtomValue(widgetSettingsAtom)
   const conversationId = useAtomValue(conversationIdAtom)
   const organizationId = useAtomValue(organizationIdAtom)
   const contactSessionId = useAtomValue(
@@ -60,6 +62,18 @@ export const WidgetChatScreen = () => {
     setConversationId(null)
     setScreen('selection')
   }
+
+  const suggestions = useMemo(() => {
+    if (!widgetSettings) {
+      return []
+    }
+
+    return Object.keys(widgetSettings.defaultSuggestions).map((key) => {
+      return widgetSettings.defaultSuggestions[
+        key as keyof typeof widgetSettings.defaultSuggestions
+      ]
+    })
+  }, [widgetSettings])
 
   const conversation = useQuery(
     api.public.conversations.getOne,
@@ -82,13 +96,12 @@ export const WidgetChatScreen = () => {
     { initialNumItems: 10 }
   )
 
-
-  const {topElementRef, canLoadMore, isLoadingMore, handleLoadMore} = useInfiniteScroll({
-    status: messages.status,
-    loadMore: messages.loadMore,
-    loadSize: 10,
-  })
-
+  const { topElementRef, canLoadMore, isLoadingMore, handleLoadMore } =
+    useInfiniteScroll({
+      status: messages.status,
+      loadMore: messages.loadMore,
+      loadSize: 10,
+    })
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -136,11 +149,17 @@ export const WidgetChatScreen = () => {
           {toUIMessages(messages.results ?? [])
             ?.filter((message) => {
               // Filter out tool-related messages (tool calls and tool results)
-              const hasToolCalls = message.parts?.some((part) => part.type === 'tool-call')
-              const hasToolResults = message.parts?.some((part) => part.type === 'tool-result')
+              const hasToolCalls = message.parts?.some(
+                (part) => part.type === 'tool-call'
+              )
+              const hasToolResults = message.parts?.some(
+                (part) => part.type === 'tool-result'
+              )
 
               // Only show messages with text content
-              const hasTextContent = message.parts?.some((part) => part.type === 'text' && part.text.trim().length > 0)
+              const hasTextContent = message.parts?.some(
+                (part) => part.type === 'text' && part.text.trim().length > 0
+              )
 
               return hasTextContent && !hasToolCalls && !hasToolResults
             })
@@ -159,10 +178,10 @@ export const WidgetChatScreen = () => {
                   <AIMessageContent>
                     <AIResponse>{textContent}</AIResponse>
                   </AIMessageContent>
-                  {message.role === "assistant" && (
+                  {message.role === 'assistant' && (
                     <DicebearAvatar
-                      imageUrl='/logo.svg'
-                      seed='assistant'
+                      imageUrl="/logo.svg"
+                      seed="assistant"
                       size={32}
                     />
                   )}
@@ -171,7 +190,30 @@ export const WidgetChatScreen = () => {
             })}
         </AIConversationContent>
       </AIConversation>
-      {/* TODO ADD Suggestions */}
+      {toUIMessages(messages.results ?? [])?.length === 1 && (
+        <AISuggestions className="flex w-full flex-col items-end p-2">
+          {suggestions.map((suggestion) => {
+            if (!suggestion) {
+              return null
+            }
+
+            return (
+              <AISuggestion
+                key={suggestion}
+                onClick={() => {
+                  form.setValue('message', suggestion, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                    shouldTouch: true,
+                  })
+                  form.handleSubmit(onSubmit)()
+                }}
+                suggestion={suggestion}
+              />
+            )
+          })}
+        </AISuggestions>
+      )}
 
       <Form {...form}>
         <AIInput
@@ -206,8 +248,8 @@ export const WidgetChatScreen = () => {
               disabled={
                 conversation?.status === 'resolved' || !form.formState.isValid
               }
-              status='ready'
-              type='submit'
+              status="ready"
+              type="submit"
             />
           </AIInputToolbar>
         </AIInput>

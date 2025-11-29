@@ -24,6 +24,20 @@ export const enhanceResponse = action({
 
     const orgId = identity.orgId as string
 
+     const subscription = await ctx.runQuery(
+          internal.system.subscriptions.getByOrganizationId,
+          {
+            organizationId: orgId,
+          }
+        )
+
+    if(subscription?.status !== "active") {
+      throw new ConvexError({
+        code: 'BAD_REQUEST',
+        message: 'Subscription not active',
+      })
+    }
+
     if (!orgId) {
       throw new ConvexError({
         code: 'UNAUTHORIZED',

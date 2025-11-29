@@ -24,9 +24,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}>
-        <ClerkProvider>
+        <ClerkProvider
+          appearance={{
+            variables: {
+              colorPrimary: '#3C82F6',
+            },
+          }}>
           <Providers>
-            <Toaster/>
+            <Toaster />
             {children}
           </Providers>
         </ClerkProvider>
